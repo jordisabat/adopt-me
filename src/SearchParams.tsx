@@ -1,20 +1,22 @@
-import { useState, useEffect, useContext } from "react";
+import { useState, useEffect, useContext, FunctionComponent } from "react";
 import ThemeContext from "./ThemeContext";
 import useBreedList from "./useBreedList";
 import Results from "./Results";
+import { PetAPIResponse, Animal, Pet } from "./APIResponseTypes";
+import { RouteComponentProps } from "react-router";
 
-const ANIMALS = ["bird", "cat", "dog", "rabbit", "reptile"];
+const ANIMALS: Animal[] = ["bird", "cat", "dog", "rabbit", "reptile"];
 
-const SearchParams = () => {
-  const [location, setLocation] = useState("");
-  const [animal, updateAnimal] = useState("");
+const SearchParams: FunctionComponent<RouteComponentProps> = () => {
+  const [location, updateLocation] = useState("");
+  const [animal, updateAnimal] = useState("" as Animal);
   const [breed, updateBreed] = useState("");
-  const [pets, updatePets] = useState([]);
+  const [pets, updatePets] = useState([] as Pet[]);
   const [breeds] = useBreedList(animal);
   const [theme, setTheme] = useContext(ThemeContext);
 
   useEffect(() => {
-    requestsPets();
+    void requestsPets();
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   async function requestsPets() {
@@ -22,13 +24,9 @@ const SearchParams = () => {
       `http://pets-v2.dev-apis.com/pets?animal=${animal}&location=${location}&breed=${breed}`
     );
 
-    const json = await res.json();
+    const json = (await res.json()) as PetAPIResponse;
 
     updatePets(json.pets);
-  }
-
-  function updateLocation(e) {
-    setLocation(e.target.value);
   }
 
   return (
@@ -36,14 +34,14 @@ const SearchParams = () => {
       <form
         onSubmit={(e) => {
           e.preventDefault();
-          requestsPets();
+          void requestsPets();
         }}
       >
         <label htmlFor="location">
           Location
           <input
             id="location"
-            onChange={updateLocation}
+            onChange={(e) => updateLocation(e.target.value)}
             value={location}
             placeholder="Location"
           />
@@ -53,8 +51,8 @@ const SearchParams = () => {
           <select
             id="animal"
             value={animal}
-            onChange={(e) => updateAnimal(e.target.value)}
-            onBlur={(e) => updateAnimal(e.target.value)}
+            onChange={(e) => updateAnimal(e.target.value as Animal)}
+            onBlur={(e) => updateAnimal(e.target.value as Animal)}
           >
             <option />
             {ANIMALS.map((animal) => (
